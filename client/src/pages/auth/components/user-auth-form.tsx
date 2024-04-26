@@ -1,6 +1,5 @@
-import { HTMLAttributes, useState } from 'react'
+import { HTMLAttributes, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Link } from 'react-router-dom'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -15,8 +14,11 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/custom/button'
 import { PasswordInput } from '@/components/custom/password-input'
 import { cn } from '@/lib/utils'
+import { useAuth } from "@/hooks/use-auth"
+import { useNavigate } from 'react-router-dom'
+import { toast } from '@/components/ui/use-toast'
 
-interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {}
+interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> { }
 
 const formSchema = z.object({
   email: z
@@ -35,6 +37,14 @@ const formSchema = z.object({
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const { login, isLogin } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLogin) {
+      navigate("/dashboard");
+    }
+  }, [navigate, isLogin]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -44,13 +54,19 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    console.log(data)
 
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 3000)
+    try {
+      const response = await login(data.email, data.password, setIsLoading);
+      console.log("Login successful:", response);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: error.message,
+      });
+    }
   }
 
   return (
@@ -62,7 +78,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               control={form.control}
               name='email'
               render={({ field }) => (
-                <FormItem className='space-y-1'>
+                <FormItem className='space-y-2 mt-3'>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input placeholder='name@example.com' {...field} />
@@ -75,15 +91,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
               control={form.control}
               name='password'
               render={({ field }) => (
-                <FormItem className='space-y-1'>
+                <FormItem className='space-y-2 mt-3'>
                   <div className='flex items-center justify-between'>
                     <FormLabel>Password</FormLabel>
-                    <Link
-                      to='/forgot-password'
-                      className='text-sm font-medium text-muted-foreground hover:opacity-75'
-                    >
-                      Forgot password?
-                    </Link>
                   </div>
                   <FormControl>
                     <PasswordInput placeholder='********' {...field} />

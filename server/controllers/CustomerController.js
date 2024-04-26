@@ -24,7 +24,7 @@ class customerController {
     }
 
     try {
-      const customer = await customer.findByPk(id);
+      const customer = await Customer.findByPk(id);
       if (!customer) {
         return res.status(404).json({ message: "customer not found" });
       }
@@ -36,25 +36,23 @@ class customerController {
   };
 
   static register = async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, type, address } = req.body;
 
-    if (!(username && email && password)) {
+    if (!(username && email && password && address && type)) {
       return res.status(401).json({ error: "Missing input fields" });
     }
 
     try {
-      const newcustomer = await customer.create({ username, email, password: await bcrypt.hash(password, 10), isTeam });
+      const newcustomer = await Customer.create({ username, email, password: await bcrypt.hash(password, 10), type, address });
 
       const token = jwt.sign(
         {
           id: newcustomer.id,
           email: newcustomer.email,
           username: newcustomer.username,
-          isAdmin: false,
-          isTeam: newcustomer.isTeam,
-          maxEvents: newcustomer.maxEvents,
-          points: newcustomer.points,
-          role: "student",
+          type: newcustomer.type,
+          address: newcustomer.address,
+          isAdmin: true,
         },
         process.env.JWT_SECRET_KEY,
         {
@@ -67,7 +65,7 @@ class customerController {
         msg: "Registration Successful",
       });
     } catch (error) {
-      if (error.username === "SequelizeUniqueConstraintError") {
+      if (error.name === "SequelizeUniqueConstraintError") {
         return res.status(400).json({ error: "Email address already exists" });
       } else {
         console.error("Error creating admin customer:", error);
@@ -85,9 +83,9 @@ class customerController {
 
     let isAdmin = false;
     let role = "student";
-
+    let customer;
     try {
-      let customer = await customer.findOne({
+      customer = await Customer.findOne({
         where: { email },
       });
 
@@ -144,7 +142,7 @@ class customerController {
     }
 
     try {
-      let customer = await customer.findByPk(id);
+      let customer = await Customer.findByPk(id);
 
       if (!customer) {
         return res.status(404).json({ message: "customer not found" });
@@ -153,7 +151,7 @@ class customerController {
       if (name) customer.name = name;
       if (email) customer.email = email;
 
-      await customer.save();
+      await Customer.save();
 
       res.status(200).json({ message: "customer updated successfully" });
     } catch (error) {
@@ -171,12 +169,12 @@ class customerController {
 
     try {
       for (const id of ids) {
-        const customer = await customer.findByPk(id);
+        const customer = await Customer.findByPk(id);
         if (!customer) {
           return res.status(404).json({ error: `customer with ID ${id} not found` });
         }
 
-        await customer.destroy();
+        await Customer.destroy();
       }
 
       res.status(200).json({ msg: "customers deleted successfully" });
@@ -312,7 +310,7 @@ class customerController {
     const { id, maxEvents } = req.body;
 
     try {
-      const customer = await customer.findByPk(id);
+      const customer = await Customer.findByPk(id);
 
       if (!customer) {
         return res.status(404).json({ message: "customer not found" });
@@ -320,7 +318,7 @@ class customerController {
 
       customer.maxEvents = maxEvents;
 
-      await customer.save();
+      await Customer.save();
 
       res.status(200).json({ message: "student data updated successfully" });
     } catch (error) {
@@ -338,9 +336,9 @@ class customerController {
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-      const { id, email, name, isAdmin, role, isTeam, maxEvents } = decoded;
+      const { id, email, name, isAdmin, role } = decoded;
 
-      const updatedcustomer = await customer.findByPk(id);
+      const updatedcustomer = await Customer.findByPk(id);
 
       const newToken = jwt.sign(
         {

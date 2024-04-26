@@ -1,12 +1,8 @@
 import {
   IconApps,
-  IconBarrierBlock,
-  IconChecklist,
-  IconError404,
-  IconExclamationCircle,
   IconLayoutDashboard,
-  IconServerOff,
-  IconSettings,
+  IconSettings, 
+  IconChecklist,
   IconUsers,
 } from '@tabler/icons-react'
 
@@ -30,26 +26,26 @@ export const sidelinks: SideLink[] = [
   },
   {
     title: 'Tickets',
-    label: '3',
-    href: '/tickets',
+    label: '',
+    href: '/admin/tickets',
     icon: <IconChecklist size={18} />,
   },
   {
     title: 'Customers',
     label: '',
-    href: '/customers',
+    href: '/admin/customers',
     icon: <IconUsers size={18} />,
   },
   {
     title: 'Settings',
     label: '',
-    href: '/settings',
+    href: '/admin/settings',
     icon: <IconSettings size={18} />,
   },
-    {
+  {
     title: 'Apps',
     label: '',
-    href: '/apps',
+    href: '/admin/apps',
     icon: <IconApps size={18} />,
   }
 ]

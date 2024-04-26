@@ -1,7 +1,6 @@
-import { HTMLAttributes, useState } from 'react'
+import { HTMLAttributes, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { IconBrandFacebook, IconBrandGithub } from '@tabler/icons-react'
 import { z } from 'zod'
 import {
   Form,
@@ -15,11 +14,25 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/custom/button'
 import { PasswordInput } from '@/components/custom/password-input'
 import { cn } from '@/lib/utils'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from "@/hooks/use-auth"
+import { toast } from '@/components/ui/use-toast'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
-interface SignUpFormProps extends HTMLAttributes<HTMLDivElement> {}
+interface SignUpFormProps extends HTMLAttributes<HTMLDivElement> { }
 
 const formSchema = z
   .object({
+    username: z
+      .string()
+      .min(1, { message: 'Please enter your username' }),
     email: z
       .string()
       .min(1, { message: 'Please enter your email' })
@@ -29,10 +42,14 @@ const formSchema = z
       .min(1, {
         message: 'Please enter your password',
       })
-      .min(7, {
-        message: 'Password must be at least 7 characters long',
+      .min(8, {
+        message: 'Password must be at least 8 characters long',
       }),
     confirmPassword: z.string(),
+    type: z.string()
+      .min(1, { message: 'Please select a type' }),
+    address: z.string().min(1, { message: 'Please enter your address' }),
+
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match.",
@@ -41,23 +58,40 @@ const formSchema = z
 
 export function SignUpForm({ className, ...props }: SignUpFormProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const { register, isLogin } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLogin) {
+      navigate("/admin");
+    }
+  }, [navigate, isLogin]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      username: '',
       email: '',
       password: '',
       confirmPassword: '',
+      type: '',
+      address: ''
     },
   })
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
-    console.log(data)
 
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 3000)
+    try {
+      const response = await register(data.username, data.email, data.password, data.type,data.address,  setIsLoading);
+      console.log("Login successful:", response);
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: error.message,
+      });
+    }
   }
 
   return (
@@ -65,6 +99,19 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className='grid gap-2'>
+            <FormField
+              control={form.control}
+              name='username'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input type='text' placeholder='username' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name='email'
@@ -103,42 +150,44 @@ export function SignUpForm({ className, ...props }: SignUpFormProps) {
                   <FormMessage />
                 </FormItem>
               )}
+            />            
+            <FormField
+              control={form.control}
+              name='address'
+              render={({ field }) => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder='Enter your address' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='type'
+              render={() => (
+                <FormItem className='space-y-1'>
+                  <FormLabel>Type</FormLabel>
+                  <Select onValueChange={(val) => form.setValue("type", val)}>
+                    <SelectTrigger >
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="individual">individual</SelectItem>
+                        <SelectItem value="business">business</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
             <Button className='mt-2' loading={isLoading}>
               Create Account
             </Button>
-
-            <div className='relative my-2'>
-              <div className='absolute inset-0 flex items-center'>
-                <span className='w-full border-t' />
-              </div>
-              <div className='relative flex justify-center text-xs uppercase'>
-                <span className='bg-background px-2 text-muted-foreground'>
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className='flex items-center gap-2'>
-              <Button
-                variant='outline'
-                className='w-full'
-                type='button'
-                loading={isLoading}
-                leftSection={<IconBrandGithub className='h-4 w-4' />}
-              >
-                GitHub
-              </Button>
-              <Button
-                variant='outline'
-                className='w-full'
-                type='button'
-                loading={isLoading}
-                leftSection={<IconBrandFacebook className='h-4 w-4' />}
-              >
-                Facebook
-              </Button>
-            </div>
           </div>
         </form>
       </Form>

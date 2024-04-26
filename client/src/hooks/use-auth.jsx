@@ -27,7 +27,7 @@ const AuthProvider = ({ children }) => {
   const refreshToken = async () => {
     try {
       setLoading(true)
-      const response = await fetch('http://localhost:5002/refresh-token', {
+      const response = await fetch('http://localhost:5000/refresh-token', {
         method: 'GET',
         headers: {
           Authorization: `${token}`,
@@ -48,11 +48,10 @@ const AuthProvider = ({ children }) => {
     }
   }
 
-  const login = async (email, password, setError) => {
+  const login = async (email, password, setLoading) => {
     try {
       setLoading(true)
-      setError(null)
-      const response = await fetch('http://localhost:5002/user/login', {
+      const response = await fetch('http://localhost:5000/user/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,22 +69,28 @@ const AuthProvider = ({ children }) => {
       setIsLogin(true)
       return data
     } catch (error) {
-      setError(error.message)
+      throw new Error(error.message)
     } finally {
       setLoading(false)
     }
   }
 
-  const register = async (name, email, password, isTeam, setError) => {
+  const register = async (
+    username,
+    email,
+    password,
+    type,
+    address,
+    setLoading
+  ) => {
     try {
       setLoading(true)
-      setError(null)
-      const response = await fetch('http://localhost:5002/user/register', {
+      const response = await fetch('http://localhost:5000/user/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password, isTeam }),
+        body: JSON.stringify({ username, email, password, type, address }),
       })
 
       const data = await response.json()
@@ -97,7 +102,7 @@ const AuthProvider = ({ children }) => {
       setToken(data.token)
       return data
     } catch (error) {
-      setError(error.message)
+      throw new Error(error.message)
     } finally {
       setLoading(false)
     }

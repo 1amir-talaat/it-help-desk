@@ -5,12 +5,29 @@ import { Button } from '@/components/custom/button'
 import { Input } from '@/components/ui/input'
 import { DataTableViewOptions } from './data-table-view-options'
 
-import { priorities, statuses } from '../data/data'
 import { DataTableFacetedFilter } from './data-table-faceted-filter'
+
+import {
+  BackpackIcon,
+  PersonIcon
+} from '@radix-ui/react-icons'
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>
 }
+
+const type = [
+  {
+    value: 'individual',
+    label: 'Individual',
+    icon: PersonIcon,
+  },
+  {
+    value: 'business',
+    label: 'Business',
+    icon: BackpackIcon,
+  },
+]
 
 export function DataTableToolbar<TData>({
   table,
@@ -29,18 +46,11 @@ export function DataTableToolbar<TData>({
           className='h-8 w-[150px] lg:w-[250px]'
         />
         <div className='flex gap-x-2'>
-          {table.getColumn('status') && (
+          {table.getColumn('type') && (
             <DataTableFacetedFilter
-              column={table.getColumn('status')}
-              title='Status'
-              options={statuses}
-            />
-          )}
-          {table.getColumn('priority') && (
-            <DataTableFacetedFilter
-              column={table.getColumn('priority')}
-              title='Priority'
-              options={priorities}
+              column={table.getColumn('type')}
+              title='type'
+              options={type}
             />
           )}
         </div>

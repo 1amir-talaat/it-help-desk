@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { User, Admin } from "../models/models.js";
+import { Customer, Admin } from "../models/models.js";
 
 const verifyToken = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -23,7 +23,7 @@ const verifyToken = async (req, res, next) => {
       req.isAdmin = true;
       req.role = user.role;
     } else {
-      user = await User.findOne({
+      user = await Customer.findOne({
         where: { email: decodedToken.email },
         attributes: { exclude: ["password"] },
       });

@@ -1,6 +1,6 @@
 import express from "express";
-// import UserController from "../controllers/UserController.js";
-// import verifyToken from "../middleware/verifyToken.js";
+import customerController from "../controllers/CustomerController.js";
+import verifyToken from "../middleware/verifyToken.js";
 // import ParticipationController from "../controllers/participationController.js";
 // import EventController from "../controllers/EventController.js";
 // import checkEventParticipation from "../middleware/checkEventParticipation.js";
@@ -8,15 +8,13 @@ import express from "express";
 const router = express.Router();
 
 // // User routes
-// router.get("/user/all", verifyToken, UserController.getAllUsers);
-// router.get("/user/top", verifyToken, UserController.getTopUsers);
-// router.get("/user/:id", verifyToken, UserController.getUserById);
-// router.post("/user/register", UserController.register);
-// router.post("/user/login", UserController.login);
-// router.put("/user/edit/:id", verifyToken, UserController.editUser);
-// router.delete("/user", verifyToken, UserController.deleteUsers);
-// router.put("/user/changeMaxEvents", UserController.changeMaxEvents);
-// router.get("/refresh-token", verifyToken, UserController.refreshUserToken);
+router.get("/user/all", customerController.getAllcustomers);
+router.get("/user/:id", verifyToken, customerController.getcustomerById);
+router.post("/user/register", customerController.register);
+router.post("/user/login", customerController.login);
+router.put("/user/edit/:id", verifyToken, customerController.editcustomer);
+router.delete("/user", verifyToken, customerController.deletecustomers);
+// router.get("/refresh-token", verifyToken, customerController.refreshUserToken);
 
 // // Admin routes
 // router.post("/admin", verifyToken, UserController.createAdmin);

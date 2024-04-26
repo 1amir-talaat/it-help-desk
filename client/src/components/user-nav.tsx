@@ -10,8 +10,11 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useAuth } from "../hooks/use-auth"
 
 export function UserNav() {
+  const user = useAuth()
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

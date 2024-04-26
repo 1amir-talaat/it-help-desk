@@ -16,6 +16,9 @@ const Customer = db.define("Customer", {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
+    validate: {
+      isEmail: true, // Validates that the value matches an email format
+    },
   },
   password: {
     type: DataTypes.STRING,
